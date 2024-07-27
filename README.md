@@ -42,7 +42,5 @@ The project uses the following technologies:
 3. View the generated matrices.
 4. See the resulting matrix that shows the sum and multiplication of the corresponding indices.
 
-## License
 
-This project is licensed under the MIT License.
 
