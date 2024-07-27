@@ -13,27 +13,48 @@ const MatrixCalculator: React.FC = () => {
   const [sumMatrix, setSumMatrix] = useState<number[][]>([]);
   const [error, setError] = useState<string>('');
 
+  const isInputValid = (value: string | number) => {
+    const num = Number(value);
+    return !isNaN(num) && num >= 0 && Number.isInteger(num);
+  };
+
+  const handleRowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (isInputValid(value)) {
+      setRows(Number(value));
+      setError('');
+    } else {
+      setRows('');
+      setError('Rows and Columns must be non-negative integers.');
+    }
+  };
+
+  const handleColChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (isInputValid(value)) {
+      setCols(Number(value));
+      setError('');
+    } else {
+      setCols('');
+      setError('Rows and Columns must be non-negative integers.');
+    }
+  };
+
   const generateMatrices = () => {
-    const rowsNum = Number(rows);
-    const colsNum = Number(cols);
-
-    if (rowsNum < 0 || colsNum < 0) {
-      setError('Row and column values must be non-negative');
+    if (!isInputValid(rows) || !isInputValid(cols)) {
+      setError('Row and column values must be non-negative integers');
       return;
     }
 
-    if (!Number.isInteger(rowsNum) || !Number.isInteger(colsNum)) {
-      setError('Row and column values must be integers');
-      return;
-    }
-
+    const numRows = Number(rows);
+    const numCols = Number(cols);
     const newMatrix1: number[][] = [];
     const newMatrix2: number[][] = [];
 
-    for (let i = 0; i < rowsNum; i++) {
+    for (let i = 0; i < numRows; i++) {
       const row1: number[] = [];
       const row2: number[] = [];
-      for (let j = 0; j < colsNum; j++) {
+      for (let j = 0; j < numCols; j++) {
         row1.push(i + j);
         row2.push(i * j);
       }
@@ -48,11 +69,13 @@ const MatrixCalculator: React.FC = () => {
   };
 
   const addMatrices = () => {
+    const numRows = Number(rows);
+    const numCols = Number(cols);
     const newSumMatrix: number[][] = [];
 
-    for (let i = 0; i < matrix1.length; i++) {
+    for (let i = 0; i < numRows; i++) {
       const row: number[] = [];
-      for (let j = 0; j < matrix1[i].length; j++) {
+      for (let j = 0; j < numCols; j++) {
         row.push(matrix1[i][j] + matrix2[i][j]);
       }
       newSumMatrix.push(row);
@@ -76,7 +99,7 @@ const MatrixCalculator: React.FC = () => {
       <Table>
         <TableHead>
           <TableRow>
-            {Array.from({ length: cols as number }).map((_, index) => (
+            {Array.from({ length: Number(cols) }).map((_, index) => (
               <TableCell key={index}>Col {index + 1}</TableCell>
             ))}
           </TableRow>
@@ -94,6 +117,8 @@ const MatrixCalculator: React.FC = () => {
     </>
   );
 
+  const allButtonsDisabled = !isInputValid(rows) || !isInputValid(cols) || Number(rows) <= 0 || Number(cols) <= 0;
+
   return (
     <Container>
       <Grid container spacing={2} justifyContent="center" alignItems="center">
@@ -102,9 +127,9 @@ const MatrixCalculator: React.FC = () => {
             label="Rows"
             type="number"
             value={rows}
-            onChange={(e) => setRows(Number(e.target.value))}
-            error={!!error && (Number(rows) < 0 || !Number.isInteger(Number(rows)))}
-            helperText={error && (Number(rows) < 0 || !Number.isInteger(Number(rows))) ? error : ''}
+            onChange={handleRowChange}
+            error={!!error && !isInputValid(rows)}
+            helperText={error && !isInputValid(rows) ? error : ''}
           />
         </Grid>
         <Grid item>
@@ -112,23 +137,24 @@ const MatrixCalculator: React.FC = () => {
             label="Columns"
             type="number"
             value={cols}
-            onChange={(e) => setCols(Number(e.target.value))}
-            error={!!error && (Number(cols) < 0 || !Number.isInteger(Number(cols)))}
-            helperText={error && (Number(cols) < 0 || !Number.isInteger(Number(cols))) ? error : ''}
+            onChange={handleColChange}
+            error={!!error && !isInputValid(cols)}
+            helperText={error && !isInputValid(cols) ? error : ''}
           />
         </Grid>
         <Grid item>
-          <Button variant="contained" color="primary" onClick={generateMatrices}>
+          <Button variant="contained" color="primary" onClick={generateMatrices} disabled={allButtonsDisabled}>
             Generate
           </Button>
         </Grid>
         <Grid item>
-          <Button variant="contained" color="secondary" onClick={clearMatrices}>
-            Clear All
+          <Button variant="contained" color="secondary" onClick={clearMatrices} disabled={allButtonsDisabled}>
+            Clear
           </Button>
         </Grid>
       </Grid>
       {error && <Alert severity="error">{error}</Alert>}
+      <br />
       <Grid container spacing={2} justifyContent="center" alignItems="center">
         <Grid item>{matrix1.length > 0 && renderTable(matrix1, 'Matrix 1 (Sum of Indices)')}</Grid>
         <Grid item>{matrix2.length > 0 && renderTable(matrix2, 'Matrix 2 (Product of Indices)')}</Grid>
